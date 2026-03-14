@@ -622,12 +622,24 @@ function startFromCard(text) { inp.value=text; startChat(); send(); }
 function useSug(el) { inp.value=el.textContent; sugsEl.style.display='none'; send(); }
 
 async function send() {
-  const text=inp.value.trim(); if(!text) return;
+  const text=inp.value.trim(); if(!text && !attachedImage) return;
   startChat(); sugsEl.style.display='none';
   inp.value=''; inp.style.height='auto'; sendBtn.disabled=true;
   const msgTime=now();
-  renderMsg('user',text,msgTime);
-  history.push({role:'user',content:text});
+  renderMsg('user',text||'[Image attached]',msgTime);
+
+  // Build message content with optional image
+  let userContent;
+  if (attachedImage) {
+    userContent = [
+      { type: 'image', source: { type: 'base64', media_type: attachedImage.type, data: attachedImage.data }},
+      { type: 'text', text: text || 'Please analyze this image.' }
+    ];
+    clearImage();
+  } else {
+    userContent = text;
+  }
+  history.push({role:'user', content: userContent});
   addTyping();
   try {
     const res=await fetch('https://riska-ai-proxy.riskas-finances.workers.dev/',{
