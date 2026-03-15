@@ -518,8 +518,11 @@ auth.onAuthStateChanged(user => {
       av.textContent = initials;
     }
     document.getElementById('welcome-user').textContent = 'Welcome back, ' + name.split(' ')[0] + '!';
-    renderSidebar();
+    currentUID = user.uid;
+    loadConvos();
+    newChat();
   } else {
+    currentUID = null;
     loading.classList.add('hidden');
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
@@ -528,7 +531,8 @@ auth.onAuthStateChanged(user => {
 });
 
 // ── CHAT ──
-let conversations = JSON.parse(localStorage.getItem('riska_convos')||'[]');
+let conversations = [];
+  let currentUID = null;
 let currentId = null, history = [];
 let attachedImage = null;
 const chatEl = document.getElementById('chat');
@@ -537,7 +541,9 @@ const sugsEl = document.getElementById('sugs');
 const inp = document.getElementById('inp');
 const sendBtn = document.getElementById('send');
 
-function saveConvos() { localStorage.setItem('riska_convos', JSON.stringify(conversations)); }
+function getKey() { return 'riska_convos_' + (currentUID || 'guest'); }
+function loadConvos() { conversations = JSON.parse(localStorage.getItem(getKey())||'[]'); }
+function saveConvos() { localStorage.setItem(getKey(), JSON.stringify(conversations)); }
 function now() { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
 
 function renderSidebar() {
