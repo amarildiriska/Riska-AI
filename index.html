@@ -664,7 +664,7 @@ async function send() {
       if(c) { c.history=[...history]; c.messages.push({role:'user',text,time:msgTime},{role:'ai',text:reply,time:replyTime}); }
     }
     saveConvos(); renderSidebar();
-  } catch(e) { removeTyping(); renderMsg('ai','Connection issue. Please try again.',now()); }
+  } catch(e) { removeTyping(); renderMsg('ai','Error: '+e.message,now()); console.error('Full error:',e); }
   sendBtn.disabled=false;
 }
 
