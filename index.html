@@ -520,15 +520,68 @@ auth.onAuthStateChanged(user => {
     document.getElementById('welcome-user').textContent = 'Welcome back, ' + name.split(' ')[0] + '!';
     currentUID = user.uid;
     loadConvos();
+    checkPlan(user.uid);
     newChat();
   } else {
     currentUID = null;
+    userPlan = 'basic';
     loading.classList.add('hidden');
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
     newChat();
   }
 });
+
+// ── PLAN ──
+let userPlan = 'basic'; // 'basic', 'pro', 'premium'
+
+// Plan list — add UIDs here manually after client pays
+// Format: 'FIREBASE_UID': 'pro' or 'premium'
+const PLAN_LIST = {
+  // Example: 'abc123xyz': 'pro',
+};
+
+async function checkPlan(uid) {
+  userPlan = PLAN_LIST[uid] || 'basic';
+  updatePlanUI();
+}
+
+function updatePlanUI() {
+  const pill = document.getElementById('tier-pill');
+  const ctrTxt = document.getElementById('ctr-txt');
+  const proBtn = document.getElementById('pro-btn');
+  if (userPlan === 'premium') {
+    pill.textContent = 'Premium Plan';
+    pill.style.background = 'rgba(180,130,0,0.25)';
+    pill.style.color = '#f0c040';
+    pill.style.borderColor = 'rgba(180,130,0,0.5)';
+    ctrTxt.textContent = 'Premium plan · Direct CPA access';
+    proBtn.style.display = 'none';
+  } else if (userPlan === 'pro') {
+    pill.textContent = 'Pro Plan';
+    pill.style.background = 'rgba(50,150,50,0.2)';
+    pill.style.color = '#5dba5d';
+    pill.style.borderColor = 'rgba(50,150,50,0.4)';
+    ctrTxt.textContent = 'Pro plan · Advanced responses';
+    proBtn.style.display = 'none';
+  } else {
+    pill.textContent = 'Free Plan · Upgrade';
+    pill.style.background = '';
+    pill.style.color = '';
+    pill.style.borderColor = '';
+    ctrTxt.textContent = 'Basic plan · Free forever';
+    proBtn.style.display = '';
+  }
+}
+
+function getPlanSystem() {
+  if (userPlan === 'premium') {
+    return SYSTEM + '\n\nThis user is on the PREMIUM plan. Provide the most thorough, detailed, personalized responses possible. At the end of complex planning questions, offer them direct consultation with Amarildi Riska at admin@riskasfinance.com.';
+  } else if (userPlan === 'pro') {
+    return SYSTEM + '\n\nThis user is on the PRO plan. Provide detailed, strategic, in-depth responses with comprehensive tax planning analysis.';
+  }
+  return SYSTEM;
+}
 
 // ── CHAT ──
 let conversations = [];
@@ -586,7 +639,12 @@ function renderMsg(role,text,time,scroll=true) {
   if(role==='ai'){ const img=document.createElement('img'); img.src=LOGO; img.alt='R'; img.style.cssText='width:100%;height:100%;object-fit:contain;'; av.appendChild(img); }
   else{ av.textContent='You'; }
   const inner=document.createElement('div');
-  const bubble=document.createElement('div'); bubble.className='bubble'; bubble.textContent=text;
+  const bubble=document.createElement('div'); bubble.className='bubble';
+  bubble.innerHTML=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/##\s(.+?)(?=\n|$)/g,'<br><strong style="font-size:15px;color:#1A0A00">$1</strong><br>')
+    .replace(/\n- /g,'<br>• ')
+    .replace(/\n/g,'<br>');
   const t=document.createElement('div'); t.className='msg-time'; t.textContent=time||now();
   inner.appendChild(bubble); inner.appendChild(t); wrap.appendChild(av); wrap.appendChild(inner);
   chatEl.appendChild(wrap); if(scroll) chatEl.scrollTop=chatEl.scrollHeight;
@@ -648,7 +706,7 @@ async function send() {
   history.push({role:'user', content: userContent});
   addTyping();
   try {
-    const payload = JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:SYSTEM,messages:history});
+    const payload = JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:getPlanSystem(),messages:history});
     const res=await fetch('https://riska-ai-proxy.riskas-finances.workers.dev/',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
