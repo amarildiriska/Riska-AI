@@ -681,10 +681,15 @@ function toggleSidebar() { document.getElementById('sidebar').classList.toggle('
 function showModal() { document.getElementById('modal').classList.add('show'); }
 function hideModal() { document.getElementById('modal').classList.remove('show'); }
 function goStripe(plan) {
+  const user = auth.currentUser;
+  const email = user ? encodeURIComponent(user.email) : '';
+  const urls = {
+    pro: 'https://buy.stripe.com/fZu3cubuAaRr5hC6zIcEw00',
+    premium: 'https://buy.stripe.com/bJecN46ag1gRbG0cY6cEw01'
+  };
+  const url = urls[plan] + (email ? '?prefilled_email=' + email : '');
   hideModal();
-  renderMsg('ai', plan==='pro'
-    ? '✅ Great choice! Stripe payment setup is coming soon. Email admin@riskasfinance.com to activate your Pro plan early!'
-    : '✅ Excellent! Premium gives you direct access to Amarildi Riska, CPA/EA. Email admin@riskasfinance.com to get started!', now());
+  window.open(url, '_blank');
 }
 </script>
 </body>
