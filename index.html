@@ -731,7 +731,9 @@ async function send() {
   history.push({role:'user', content: userContent});
   addTyping();
   try {
-    const payload = JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:getPlanSystem(),messages:history});
+    // Send only last 10 messages to API to avoid rate limits, but full history is saved/displayed
+  const apiHistory = history.length > 10 ? history.slice(-10) : history;
+  const payload = JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:getPlanSystem(),messages:apiHistory});
     const res=await fetch('https://riska-ai-proxy.riskas-finances.workers.dev/',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
