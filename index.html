@@ -648,8 +648,9 @@ async function send() {
       headers:{'Content-Type':'application/json'},
       body:payload
     });
-    if(!res.ok){ const errText=await res.text(); console.error('Worker error:',res.status,errText); }
-    const data=await res.json();
+    const rawText=await res.text();
+    if(!res.ok){ console.error('Worker error:',res.status,rawText); }
+    const data=JSON.parse(rawText);
     removeTyping();
     const reply=(data.content&&data.content[0]&&data.content[0].text)||data.error?.message||'Sorry, something went wrong.';
     const replyTime=now();
