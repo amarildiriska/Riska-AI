@@ -616,7 +616,37 @@ const sendBtn = document.getElementById('send');
 
 function getKey() { return 'riska_convos_' + (currentUID || 'guest'); }
 function loadConvos() { conversations = JSON.parse(localStorage.getItem(getKey())||'[]'); }
-function saveConvos() { localStorage.setItem(getKey(), JSON.stringify(conversations)); }
+function saveConvos() {
+  try {
+    // Keep only last 20 conversations
+    if (conversations.length > 20) conversations = conversations.slice(-20);
+    // Trim each conversation to last 20 messages and truncate long text
+    const trimmed = conversations.map(c => ({
+      ...c,
+      messages: c.messages.slice(-20).map(m => ({
+        ...m,
+        text: m.text && m.text.length > 1000 ? m.text.substring(0, 1000) + '...' : m.text
+      })),
+      history: c.history.slice(-10).map(h => ({
+        role: h.role,
+        content: typeof h.content === 'string' && h.content.length > 1000
+          ? h.content.substring(0, 1000) + '...'
+          : h.content
+      }))
+    }));
+    localStorage.setItem(getKey(), JSON.stringify(trimmed));
+  } catch(e) {
+    // If still too full, keep only last 5 conversations
+    try {
+      conversations = conversations.slice(-5);
+      localStorage.setItem(getKey(), JSON.stringify(conversations));
+    } catch(e2) {
+      console.warn('Storage full — clearing old conversations');
+      conversations = conversations.slice(-2);
+      localStorage.setItem(getKey(), JSON.stringify(conversations));
+    }
+  }
+}
 function now() { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
 
 function renderSidebar() {
