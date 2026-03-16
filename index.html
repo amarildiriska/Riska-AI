@@ -750,7 +750,16 @@ async function send() {
     inner.appendChild(bubble); inner.appendChild(timeEl); wrap.appendChild(av); wrap.appendChild(inner);
     chatEl.appendChild(wrap);
     const reader=res.body.getReader(); const decoder=new TextDecoder();
-    let reply=''; let buffer='';
+    let reply=''; let buffer=''; let renderPending=false;
+    function renderBubble(){
+      bubble.innerHTML=reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+        .replace(/###?\s(.+?)(?=\n|$)/g,'<br><strong style="font-size:15px;color:#1A0A00">$1</strong><br>')
+        .replace(/\n- /g,'<br>• ')
+        .replace(/\n/g,'<br>');
+      chatEl.scrollTop=chatEl.scrollHeight;
+      renderPending=false;
+    }
     while(true){
       const {done,value}=await reader.read(); if(done) break;
       buffer+=decoder.decode(value,{stream:true});
@@ -762,16 +771,15 @@ async function send() {
           const parsed=JSON.parse(data);
           if(parsed.type==='content_block_delta'&&parsed.delta?.type==='text_delta'){
             reply+=parsed.delta.text;
-            bubble.innerHTML=reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-              .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-              .replace(/##\s(.+?)(?=\n|$)/g,'<br><strong style="font-size:15px;color:#1A0A00">$1</strong><br>')
-              .replace(/\n- /g,'<br>• ')
-              .replace(/\n/g,'<br>');
-            chatEl.scrollTop=chatEl.scrollHeight;
+            if(!renderPending){
+              renderPending=true;
+              requestAnimationFrame(renderBubble);
+            }
           }
         }catch(e){}
       }
     }
+    renderBubble();
     const replyTime=now(); timeEl.textContent=replyTime;
     history.push({role:'assistant',content:reply});
     const title=text.length>42?text.substring(0,42)+'...':text;
