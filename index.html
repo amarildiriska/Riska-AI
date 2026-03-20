@@ -978,16 +978,19 @@ function addExportButtons(bubble, text) {
   const title = text.substring(0, 60).replace(/[\n#*]/g, '').trim() || 'Riska AI Response';
   const btnWrap = document.createElement('div');
   btnWrap.className = 'export-btns';
-  btnWrap.innerHTML = \`
-    <button class="export-btn" onclick="exportToPDF(\\`\${text.replace(/\\`/g,'')}\\`, \\`\${title.replace(/\\`/g,'')}\\`)">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      Save as PDF
-    </button>
-    <button class="export-btn" onclick="exportToWord(\\`\${text.replace(/\\`/g,'')}\\`, \\`\${title.replace(/\\`/g,'')}\\`)">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      Save as Word
-    </button>
-  \`;
+  
+  const pdfBtn = document.createElement('button');
+  pdfBtn.className = 'export-btn';
+  pdfBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Save as PDF';
+  pdfBtn.onclick = function() { exportToPDF(text, title); };
+  
+  const wordBtn = document.createElement('button');
+  wordBtn.className = 'export-btn';
+  wordBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Save as Word';
+  wordBtn.onclick = function() { exportToWord(text, title); };
+  
+  btnWrap.appendChild(pdfBtn);
+  btnWrap.appendChild(wordBtn);
   bubble.parentElement.appendChild(btnWrap);
 }
 
