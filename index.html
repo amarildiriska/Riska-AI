@@ -976,21 +976,24 @@ function addExportButtons(bubble, text) {
   const title = text.substring(0, 60).replace(/[\n#*]/g, '').trim() || 'Riska AI Response';
   const btnWrap = document.createElement('div');
   btnWrap.className = 'export-btns';
+  btnWrap.style.cssText = 'display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;padding-left:41px;';
   
   const pdfBtn = document.createElement('button');
   pdfBtn.className = 'export-btn';
-  pdfBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Save as PDF';
+  pdfBtn.innerHTML = '&#x1F4C4; Save as PDF';
   pdfBtn.onclick = function() { exportToPDF(text, title); };
   
   const wordBtn = document.createElement('button');
   wordBtn.className = 'export-btn';
-  wordBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Save as Word';
+  wordBtn.innerHTML = '&#x1F4DD; Save as Word';
   wordBtn.onclick = function() { exportToWord(text, title); };
   
   btnWrap.appendChild(pdfBtn);
   btnWrap.appendChild(wordBtn);
-  bubble.parentElement.appendChild(btnWrap);
+  // Append after the whole message wrap, not inside bubble
+  bubble.closest('.msg').insertAdjacentElement('afterend', btnWrap);
 }
+
 
 inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } });
 inp.addEventListener('input',()=>{ inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,110)+'px'; });
