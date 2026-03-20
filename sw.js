@@ -1,4 +1,4 @@
-const CACHE_NAME = 'riska-ai-v1';
+const CACHE_NAME = 'riska-ai-v4';
 const urlsToCache = [
   '/Riska-AI/',
   '/Riska-AI/index.html',
