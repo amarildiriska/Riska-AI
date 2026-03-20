@@ -677,8 +677,8 @@ function renderSidebar() {
 }
 
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
-function showModal() { document.getElementById('modal').classList.add('show'); }
-function hideModal() { document.getElementById('modal').classList.remove('show'); }
+function showModal() { const m=document.getElementById('modal'); m.style.display='flex'; }
+function hideModal() { document.getElementById('modal').style.display='none'; }
 function goStripe(plan) {
   const user = auth.currentUser;
   const email = user ? encodeURIComponent(user.email) : '';
