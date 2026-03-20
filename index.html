@@ -826,7 +826,7 @@ async function send() {
     }
     renderBubble();
     const replyTime=now(); timeEl.textContent=replyTime;
-    addExportButtons(bubble, reply);
+    addExportButtons(wrap, reply);
     history.push({role:'assistant',content:reply});
     const title=text.length>42?text.substring(0,42)+'...':text;
     if(!currentId) {
@@ -972,7 +972,7 @@ function exportToWord(text, title) {
   });
 }
 
-function addExportButtons(bubble, text) {
+function addExportButtons(wrap, text) {
   const title = text.substring(0, 60).replace(/[\n#*]/g, '').trim() || 'Riska AI Response';
   const btnWrap = document.createElement('div');
   btnWrap.className = 'export-btns';
@@ -991,7 +991,7 @@ function addExportButtons(bubble, text) {
   btnWrap.appendChild(pdfBtn);
   btnWrap.appendChild(wordBtn);
   // Append after the whole message wrap, not inside bubble
-  bubble.closest('.msg').insertAdjacentElement('afterend', btnWrap);
+  wrap.insertAdjacentElement('afterend', btnWrap);
 }
 
 
