@@ -805,7 +805,9 @@ async function send() {
   addTyping();
   try {
     // Send only last 10 messages to API to avoid rate limits, but full history is saved/displayed
-  const apiHistory = history.length > 10 ? history.slice(-10) : history;
+  // Only send last 8 messages (4 exchanges) of CURRENT conversation to API
+  // Full history is saved locally — this just prevents token overflow
+  const apiHistory = history.length > 8 ? history.slice(-8) : history;
   const payload = JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:getPlanSystem(),messages:apiHistory,stream:true});
     const res=await fetch('https://riska-ai-proxy.riskas-finances.workers.dev/',{
       method:'POST',
