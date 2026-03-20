@@ -855,8 +855,8 @@ async function send() {
     renderPending = false; // Stop any pending renderBubble calls
     // Final render with export buttons baked in
     const exportHTML = '<div style="display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #f0ede8;">' +
-      '<button onclick="exportToPDF(this.dataset.text, this.dataset.title)" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e0dbd4;background:#faf9f7;color:#666;cursor:pointer;font-family:'DM Sans',sans-serif;">📄 Save as PDF</button>' +
-      '<button onclick="exportToWord(this.dataset.text, this.dataset.title)" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e0dbd4;background:#faf9f7;color:#666;cursor:pointer;font-family:'DM Sans',sans-serif;">📝 Save as Word</button>' +
+      '<button onclick="exportToPDF(this.dataset.text, this.dataset.title)" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e0dbd4;background:#faf9f7;color:#666;cursor:pointer;font-family:DM Sans,sans-serif;">📄 Save as PDF</button>' +
+      '<button onclick="exportToWord(this.dataset.text, this.dataset.title)" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e0dbd4;background:#faf9f7;color:#666;cursor:pointer;font-family:DM Sans,sans-serif;">📝 Save as Word</button>' +
       '</div>';
     const exportTitle = reply.substring(0,60).replace(/[\n#*]/g,'').trim();
     bubble.innerHTML = reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
