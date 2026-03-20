@@ -826,7 +826,20 @@ async function send() {
     }
     renderBubble();
     const replyTime=now(); timeEl.textContent=replyTime;
-    addExportButtons(wrap, reply);
+    // Add export buttons directly into inner div
+    const exportDiv = document.createElement('div');
+    exportDiv.style.cssText = 'display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #f0ede8;';
+    const pdfB = document.createElement('button');
+    pdfB.style.cssText = 'font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e0dbd4;background:#faf9f7;color:#666;cursor:pointer;font-family:DM Sans,sans-serif;';
+    pdfB.textContent = '📄 Save as PDF';
+    pdfB.onclick = function(){ exportToPDF(reply, reply.substring(0,60).replace(/[\n#*]/g,'').trim()); };
+    const wordB = document.createElement('button');
+    wordB.style.cssText = 'font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e0dbd4;background:#faf9f7;color:#666;cursor:pointer;font-family:DM Sans,sans-serif;';
+    wordB.textContent = '📝 Save as Word';
+    wordB.onclick = function(){ exportToWord(reply, reply.substring(0,60).replace(/[\n#*]/g,'').trim()); };
+    exportDiv.appendChild(pdfB);
+    exportDiv.appendChild(wordB);
+    bubble.appendChild(exportDiv);
     history.push({role:'assistant',content:reply});
     const title=text.length>42?text.substring(0,42)+'...':text;
     if(!currentId) {
@@ -970,28 +983,6 @@ function exportToWord(text, title) {
     const fname = title.substring(0, 30).replace(/[^a-z0-9]/gi, '_') + '.docx';
     saveAs(blob, fname);
   });
-}
-
-function addExportButtons(wrap, text) {
-  const title = text.substring(0, 60).replace(/[\n#*]/g, '').trim() || 'Riska AI Response';
-  const btnWrap = document.createElement('div');
-  btnWrap.className = 'export-btns';
-  btnWrap.style.cssText = 'display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;padding-left:41px;';
-  
-  const pdfBtn = document.createElement('button');
-  pdfBtn.className = 'export-btn';
-  pdfBtn.innerHTML = '&#x1F4C4; Save as PDF';
-  pdfBtn.onclick = function() { exportToPDF(text, title); };
-  
-  const wordBtn = document.createElement('button');
-  wordBtn.className = 'export-btn';
-  wordBtn.innerHTML = '&#x1F4DD; Save as Word';
-  wordBtn.onclick = function() { exportToWord(text, title); };
-  
-  btnWrap.appendChild(pdfBtn);
-  btnWrap.appendChild(wordBtn);
-  // Append after the whole message wrap, not inside bubble
-  wrap.insertAdjacentElement('afterend', btnWrap);
 }
 
 
