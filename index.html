@@ -677,8 +677,8 @@ function renderSidebar() {
 }
 
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
-function showModal() { const m=document.getElementById('modal'); m.style.display='flex'; }
-function hideModal() { document.getElementById('modal').style.display='none'; }
+function showModal() { document.getElementById('modal').classList.add('show'); }
+function hideModal() { document.getElementById('modal').classList.remove('show'); }
 function goStripe(plan) {
   const user = auth.currentUser;
   const email = user ? encodeURIComponent(user.email) : '';
@@ -852,27 +852,22 @@ async function send() {
         }catch(e){}
       }
     }
-    renderPending = false; // Stop any pending renderBubble calls
-    // Final render with export buttons baked in
-    const exportHTML = '<div style="display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #f0ede8;">' +
-      '<button onclick="exportToPDF(this.dataset.text, this.dataset.title)" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e0dbd4;background:#faf9f7;color:#666;cursor:pointer;font-family:'DM Sans',sans-serif;">📄 Save as PDF</button>' +
-      '<button onclick="exportToWord(this.dataset.text, this.dataset.title)" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e0dbd4;background:#faf9f7;color:#666;cursor:pointer;font-family:'DM Sans',sans-serif;">📝 Save as Word</button>' +
-      '</div>';
-    const exportTitle = reply.substring(0,60).replace(/[\n#*]/g,'').trim();
-    bubble.innerHTML = reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-      .replace(/###?\s(.+?)(?=\n|$)/g,'<br><strong style="font-size:15px;color:#1A0A00">$1</strong><br>')
-      .replace(/\n- /g,'<br>• ')
-      .replace(/\n/g,'<br>') + exportHTML;
-    // Set data attributes on buttons
-    bubble.querySelectorAll('button').forEach(btn => {
-      btn.dataset.text = reply;
-      btn.dataset.title = exportTitle;
-    });
-    chatEl.scrollTop = chatEl.scrollHeight;
+    renderBubble();
     const replyTime=now(); timeEl.textContent=replyTime;
-    // Add export buttons directly into inner div (legacy - now done above)
-    // Export buttons now baked into innerHTML above
+    // Add export buttons directly into inner div
+    const exportDiv = document.createElement('div');
+    exportDiv.style.cssText = 'display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #f0ede8;';
+    const pdfB = document.createElement('button');
+    pdfB.style.cssText = 'font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e0dbd4;background:#faf9f7;color:#666;cursor:pointer;font-family:DM Sans,sans-serif;';
+    pdfB.textContent = '📄 Save as PDF';
+    pdfB.onclick = function(){ exportToPDF(reply, reply.substring(0,60).replace(/[\n#*]/g,'').trim()); };
+    const wordB = document.createElement('button');
+    wordB.style.cssText = 'font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #e0dbd4;background:#faf9f7;color:#666;cursor:pointer;font-family:DM Sans,sans-serif;';
+    wordB.textContent = '📝 Save as Word';
+    wordB.onclick = function(){ exportToWord(reply, reply.substring(0,60).replace(/[\n#*]/g,'').trim()); };
+    exportDiv.appendChild(pdfB);
+    exportDiv.appendChild(wordB);
+    bubble.appendChild(exportDiv);
     history.push({role:'assistant',content:reply});
     const title=text.length>42?text.substring(0,42)+'...':text;
     if(!currentId) {
