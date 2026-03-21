@@ -154,6 +154,8 @@ body{font-family:'DM Sans',sans-serif;background:#1A0A00;display:flex;align-item
 #send{width:44px;height:44px;border-radius:50%;background:#C94B1A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s;}
 #send:hover{background:#E8621A;}
 #send:disabled{opacity:0.35;cursor:not-allowed;}
+#stop-btn{width:44px;height:44px;border-radius:50%;background:#C94B1A;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s;}
+#stop-btn:hover{background:#a33a13;}
 #attach-btn{width:38px;height:38px;border-radius:10px;background:#f7f5f2;border:1.5px solid #e8e4df;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#888;transition:all 0.15s;}
 #attach-btn:hover{border-color:#C94B1A;color:#C94B1A;background:rgba(201,75,26,0.06);}
 #ctr{padding:7px 18px;border-top:1px solid #f0ede8;background:#fff;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;font-size:12px;color:#bbb;}
@@ -323,6 +325,9 @@ if('serviceWorker' in navigator){
         <textarea id="inp" placeholder="Ask any tax or accounting question..." rows="1"></textarea>
         <button id="send" onclick="send()">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+        <button id="stop-btn" onclick="stopStream()" title="Stop">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
         </button>
       </div>
       <div id="foot">Riska's Finance, LLC &nbsp;·&nbsp; Dixon, IL &nbsp;·&nbsp; <a href="https://riskasfinance.com" target="_blank">riskasfinance.com</a></div>
@@ -627,6 +632,12 @@ const chatEl = document.getElementById('chat');
 const welcomeEl = document.getElementById('welcome');
 const sugsEl = document.getElementById('sugs');
 const inp = document.getElementById('inp');
+inp.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    send();
+  }
+});
 const sendBtn = document.getElementById('send');
 
 function getKey() { return 'riska_convos_' + (currentUID || 'guest'); }
@@ -674,6 +685,19 @@ function renderSidebar() {
     item.onclick = e => { if(!e.target.classList.contains('chat-item-del')) loadConvo(c.id); };
     list.appendChild(item);
   });
+}
+
+let streamController = null;
+
+function stopStream() {
+  if (streamController) {
+    streamController.abort();
+    streamController = null;
+  }
+  document.getElementById('stop-btn').style.display = 'none';
+  document.getElementById('send').style.display = 'flex';
+  sendBtn.disabled = false;
+  removeTyping();
 }
 
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
@@ -809,10 +833,14 @@ async function send() {
   // Full history is saved locally — this just prevents token overflow
   const apiHistory = history.length > 8 ? history.slice(-8) : history;
   const payload = JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:getPlanSystem(),messages:apiHistory,stream:true});
+    streamController = new AbortController();
+    document.getElementById('stop-btn').style.display = 'flex';
+    document.getElementById('send').style.display = 'none';
     const res=await fetch('https://riska-ai-proxy.riskas-finances.workers.dev/',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:payload
+      body:payload,
+      signal: streamController.signal
     });
     if(!res.ok){ const errText=await res.text(); let errMsg='Sorry, something went wrong.'; try{const ed=JSON.parse(errText);errMsg=ed.error?.message||errMsg;}catch(e){} removeTyping(); renderMsg('ai',errMsg,now()); sendBtn.disabled=false; return; }
     removeTyping();
@@ -885,8 +913,16 @@ async function send() {
       if(c) { c.history=[...history]; c.messages.push({role:'user',text,time:msgTime},{role:'ai',text:reply,time:replyTime}); }
     }
     saveConvos(); renderSidebar();
-  } catch(e) { removeTyping(); renderMsg('ai','Error: '+e.message,now()); console.error('Full error:',e); }
-  sendBtn.disabled=false;
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      removeTyping(); renderMsg('ai','Error: '+e.message,now()); console.error('Full error:',e);
+    }
+  } finally {
+    streamController = null;
+    document.getElementById('stop-btn').style.display = 'none';
+    document.getElementById('send').style.display = 'flex';
+    sendBtn.disabled = false;
+  }
 }
 
 // ── EXPORT FUNCTIONS ──
