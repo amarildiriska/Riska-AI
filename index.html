@@ -842,7 +842,25 @@ async function send() {
       body:payload,
       signal: streamController.signal
     });
-    if(!res.ok){ const errText=await res.text(); let errMsg='Sorry, something went wrong.'; try{const ed=JSON.parse(errText);errMsg=ed.error?.message||errMsg;}catch(e){} removeTyping(); renderMsg('ai',errMsg,now()); sendBtn.disabled=false; return; }
+    if(!res.ok){ 
+      const errText=await res.text(); 
+      let errMsg='Sorry, something went wrong. Please try again.'; 
+      try{
+        const ed=JSON.parse(errText);
+        const raw=ed.error?.message||'';
+        if(raw.includes('rate limit') || raw.includes('tokens per minute')) {
+          errMsg = "We're getting a lot of questions right now! Please wait a moment and try again.";
+        } else if(raw.includes('prompt is too long') || raw.includes('tokens')) {
+          errMsg = "Your question is a bit too long for this conversation. Try starting a new chat or shortening your message.";
+        } else if(raw) {
+          errMsg = 'Something went wrong. Please try again in a moment.';
+        }
+      }catch(e){}
+      removeTyping(); 
+      renderMsg('ai', errMsg, now()); 
+      sendBtn.disabled=false; 
+      return; 
+    }
     removeTyping();
     const wrap=document.createElement('div'); wrap.className='msg ai';
     const av=document.createElement('div'); av.className='av';
