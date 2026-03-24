@@ -149,7 +149,7 @@ body{font-family:'DM Sans',sans-serif;background:#1A0A00;display:flex;align-item
 #pro-btn{font-size:12px;padding:6px 15px;border-radius:20px;background:#C94B1A;color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;}
 #pro-btn:hover{background:#E8621A;}
 #inp-row{display:flex;gap:10px;padding:12px 16px;border-top:1px solid #f0ede8;background:#fff;flex-shrink:0;align-items:flex-end;}
-#inp{flex:1;border:1.5px solid #e8e4df;border-radius:24px;padding:11px 18px;font-size:14px;font-family:'DM Sans',sans-serif;background:#faf9f7;color:#1a1a1a;outline:none;resize:none;min-height:44px;max-height:110px;line-height:1.5;transition:border-color 0.15s;}
+#inp{flex:1;border:1.5px solid #e8e4df;border-radius:24px;padding:11px 18px;font-size:14px;font-family:'DM Sans',sans-serif;background:#faf9f7;color:#1a1a1a;outline:none;resize:none;overflow:hidden;min-height:44px;max-height:200px;line-height:1.5;resize:none;min-height:44px;max-height:110px;line-height:1.5;transition:border-color 0.15s;}
 #inp:focus{border-color:#C94B1A;background:#fff;}
 #inp::placeholder{color:#bbb;}
 #send{width:44px;height:44px;border-radius:50%;background:#C94B1A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s;}
@@ -647,6 +647,12 @@ inp.addEventListener('keydown', function(e) {
     send();
   }
 });
+
+// Auto-resize textarea as user types
+inp.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+});
 const sendBtn = document.getElementById('send');
 
 function getKey() { return 'riska_convos_' + (currentUID || 'guest'); }
@@ -812,7 +818,7 @@ function useSug(el) { inp.value=el.textContent; sugsEl.style.display='none'; sen
 async function send() {
   const text=inp.value.trim(); if(!text && !attachedImage) return;
   startChat(); sugsEl.style.display='none';
-  inp.value=''; inp.style.height='auto'; sendBtn.disabled=true;
+  inp.value=''; inp.style.height='auto'; inp.style.height='auto'; sendBtn.disabled=true;
   const msgTime=now();
   renderMsg('user',text||'[Image attached]',msgTime);
 
